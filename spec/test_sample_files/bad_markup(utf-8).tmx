@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE tmx SYSTEM "tmx11.dtd">
+<tmx version="1.1">
+  <header
+  	 creationtool="AwesomeTool"
+  	 creationtoolversion="Edition 8 Build 863"
+  	 segtype="sentence"
+  	 o-tmf="TW4Win 2.0 Format"
+  	 adminlang="EN-US"
+  	 srclang="EN-US"
+  	 datatype="rtf"
+  	 creationdate="20110527T214247Z"
+  	 creationid="A"
+  >
+  <prop type="RTFFontTable">
+  {\fonttbl
+  {\f1 \fmodern\fprq1 \fcharset0 Courier New;}
+  {\f2 \fswiss\fprq2 \fcharset0 Arial;}
+  {\f3 \fcharset238 Arial CE;}
+  {\f4 \fmodern\fprq1 \fcharset238 Courier New CE;}
+  {\f5 \fcharset0 Arial Unicode MS;}
+  {\f6 \fcharset238 Arial Unicode MS CE;}
+  {\f7 \fcharset238 Tahoma CE;}
+  {\f8 \fcharset0 Tahoma;}}</prop>
+  <prop type="RTFStyleSheet">
+  {\stylesheet
+  {\St \s0 {\StN Normal}}
+  {\St \cs1 {\StB \v\f1\fs24\sub\cf12 }{\StN tw4winMark}}
+  {\St \cs2 {\StB \cf4\fs40\f1 }{\StN tw4winError}}
+  {\St \cs3 {\StB \f1\cf11\lang1024 }{\StN tw4winPopup}}
+  {\St \cs4 {\StB \f1\cf10\lang1024 }{\StN tw4winJump}}
+  {\St \cs5 {\StB \f1\cf15\lang1024 }{\StN tw4winExternal}}
+  {\St \cs6 {\StB \f1\cf6\lang1024 }{\StN tw4winInternal}}
+  {\St \cs7 {\StB \cf2 }{\StN tw4winTerm}}
+  {\St \cs8 {\StB \f1\cf13\lang1024 }{\StN DO_NOT_TRANSLATE}}}</prop>
+  </header>
+
+  <body>
+    <tu tuid=""1"">
+      <tuv xml:lang="de-DE">
+        <seg>überprüfen</seg>
+      </tuv>
+      <tuv xml:lang="en-US">
+        <seg>check</seg>
+      </tuv>
+    </tu>
+    <tu tuid="2">
+      <tuv xml:lang="de-DE">
+        <seg>Rückenlehneneinstellung</seg>
+      </tuv>
+      <tuv xml:lang="en-US">
+        <seg>Backrest adjustment</seg>
+      </tuv>
+    </tu>
+    <tu tuid="3">
+      <tuv xml:lang="de-DE">
+        <seg>Bezüglich</seg>
+      </tuv>
+      <tuv xml:lang="en-US">
+        <seg>In terms of</seg>
+      </tuv>
+    </tu>
+    <tu tuid="4">
+      <tuv xml:lang="de-DE">
+        <seg>Der Staatsschutz prüft, ob es einen Zusammenhang mit einem Anschlag auf eine geplante Flüchtlingsunterkunft in der Nachbarschaft Ende August gibt.</seg>
+      </tuv>
+      <tuv xml:lang="en-US">
+        <seg>The state protection checks whether there is a connection with an attack on a planned refugee camp in the neighborhood of late August.</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>
