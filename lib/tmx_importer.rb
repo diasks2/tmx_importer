@@ -9,20 +9,18 @@ module TmxImporter
       @file_path = file_path
       @encoding = encoding.upcase
       @doc = {
-        lang: "",
+        source_language: "",
         tu: { id: "", counter: 0, vals: "", lang: ""},
-        seg: { lang: "", count: 0, vals: ""},
-        language_pair: {},
+        seg: { lang: "", counter: 0, vals: "", role_counter: 0},
         language_pairs: []
       }
-      @counter = 0
       raise "Encoding type not supported. Please choose an encoding of UTF-8, UTF-16LE, or UTF-16BE" unless @encoding.eql?('UTF-8') || @encoding.eql?('UTF-16LE') || @encoding.eql?('UTF-16BE')
     end
 
     def stats
       reader = read_file
       parse_file(reader)
-      {tu_count: @doc[:tu][:counter], seg_count: @doc[:seg][:count], language_pairs: @doc[:language_pairs].uniq}
+      {tu_count: @doc[:tu][:counter], seg_count: @doc[:seg][:counter], language_pairs: @doc[:language_pairs].uniq}
     end
 
     def import
@@ -58,13 +56,7 @@ module TmxImporter
           eval_state_initial(tag_stack,reader)
         elsif tag_stack.last == reader.name
           d = tag_stack.dup.pop
-          if d.bytes.to_a == [35, 116, 101, 120, 116]
-            tag_stack.pop
-          end
-          if tag_stack.length > 3 && tag_stack.pop.bytes.to_a == [116, 117]
-            @doc[:language_pairs] << [@doc[:language_pair][:source], @doc[:language_pair][:target]]
-            @doc[:language_pair] = {}
-          end
+          tag_stack.pop if d.bytes.to_a == [35, 116, 101, 120, 116] || tag_stack.length > 3
         end
       end
       reader.close
@@ -73,59 +65,26 @@ module TmxImporter
     def eval_state_initial(tag_stack,reader)
       case tag_stack.last.bytes.to_a
       when [104, 101, 97, 100, 101, 114]
-        @doc[:lang] = reader.get_attribute("srclang").force_encoding("UTF-8").gsub(/[,]/, '') if @doc[:lang].empty? && reader.has_attributes? && reader.get_attribute("srclang")
+        @doc[:source_language] = reader.get_attribute("srclang").force_encoding("UTF-8") if @doc[:source_language].empty? && reader.has_attributes? && reader.get_attribute("srclang")
       when [116, 117]
-        @doc[:tu][:counter]+=1
+        @doc[:tu][:counter] += 1
+        @doc[:seg][:role_counter] == 0
       when [116, 117, 118]
         seg_lang = reader.get_attribute("lang") || reader.get_attribute("xml:lang")
-        @doc[:seg][:lang] = seg_lang.force_encoding("UTF-8").gsub(/[,]/, '') unless seg_lang.empty?
+        @doc[:seg][:lang] = seg_lang.force_encoding("UTF-8") unless seg_lang.empty?
       when [115, 101, 103]
-        @doc[:seg][:count]+=1
-        if !@doc[:lang].empty? && !@doc[:seg][:lang].empty?
-          if @doc[:lang] == @doc[:seg][:lang]
-            role = 'source'
-            @doc[:language_pair][:source] = @doc[:seg][:lang]
-          else
-            if !@doc[:lang].split('-')[0].empty? && !@doc[:seg][:lang].split('-')[0].empty?
-              if !@doc[:lang].split('-')[0].downcase.eql?(@doc[:seg][:lang].split('-')[0].downcase)
-                role = 'source'
-                @doc[:language_pair][:source] = @doc[:seg][:lang]
-              else
-                role = 'target'
-                @doc[:language_pair][:target] = @doc[:seg][:lang]
-              end
-            else
-              role = 'target'
-              @doc[:language_pair][:target] = @doc[:seg][:lang]
-            end
-          end
-        elsif !@doc[:tu][:lang].empty? && !@doc[:seg][:lang].empty?
-          if @doc[:tu][:lang] == @doc[:seg][:lang]
-            role = 'source'
-            @doc[:language_pair][:source] = @doc[:seg][:lang]
-          else
-            if !@doc[:tu][:lang].split('-')[0].empty? && !@doc[:seg][:lang].split('-')[0].empty?
-              if @doc[:tu][:lang].split('-')[0].downcase.eql?(@doc[:seg][:lang].split('-')[0].downcase)
-                role = 'source'
-                @doc[:language_pair][:source] = @doc[:seg][:lang]
-              else
-                role = 'target'
-                @doc[:language_pair][:target] = @doc[:seg][:lang]
-              end
-            else
-              role = 'target'
-              @doc[:language_pair][:target] = @doc[:seg][:lang]
-            end
-          end
-        else
-          if @doc[:seg][:count] == 1
-            role = 'source'
-            @doc[:seg][:lang] = @doc[:lang]
-            @doc[:language_pair][:source] = @doc[:seg][:lang]
-          else
-            role = 'target'
-            @doc[:language_pair][:target] = @doc[:seg][:lang]
-          end
+        @doc[:seg][:counter] += 1
+        case
+        when !@doc[:seg][:lang].empty? &&
+           @doc[:seg][:lang] != @doc[:source_language] &&
+           @doc[:seg][:lang].split('-')[0].downcase != @doc[:source_language].split('-')[0].downcase &&
+           @doc[:source_language] != '*all*'
+          @doc[:language_pairs] << [@doc[:source_language], @doc[:seg][:lang]]
+        when @doc[:source_language] == '*all*' && @doc[:seg][:role_counter] == 0
+          @doc[:source_language] = @doc[:seg][:lang]
+          @doc[:seg][:role_counter] += 1
+        when @doc[:source_language] == '*all*' && @doc[:seg][:role_counter] > 0
+          @doc[:language_pairs] << [@doc[:source_language], @doc[:seg][:lang]]
         end
       end
     end

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tmx version="1.4">
+  <header creationtool="AwesomeTool" creationtoolversion="2.0" datatype="plaintext" segtype="sentence" o-tmf="AwesomeTool TMX" adminlang="EN-US" srclang="de-DE"></header>
+  <body>
+    <tu tuid="1">
+      <tuv xml:lang="de-DE">
+        <seg>überprüfen</seg>
+      </tuv>
+      <tuv xml:lang="en-US">
+        <seg>check</seg>
+      </tuv>
+      <tuv xml:lang="it">
+        <seg>controllare</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>vérifier</seg>
+      </tuv>
+    </tu>
+    <tu tuid="2">
+      <tuv xml:lang="de-DE">
+        <seg>Rückenlehneneinstellung</seg>
+      </tuv>
+      <tuv xml:lang="en-US">
+        <seg>Backrest adjustment</seg>
+      </tuv>
+    </tu>
+    <tu tuid="3">
+      <tuv xml:lang="de-DE">
+        <seg>Bezüglich</seg>
+      </tuv>
+      <tuv xml:lang="en-US">
+        <seg>In terms of</seg>
+      </tuv>
+    </tu>
+    <tu tuid="4">
+      <tuv xml:lang="de-DE">
+        <seg>Der Staatsschutz prüft, ob es einen Zusammenhang mit einem Anschlag auf eine geplante Flüchtlingsunterkunft in der Nachbarschaft Ende August gibt.</seg>
+      </tuv>
+      <tuv xml:lang="en-US">
+        <seg>The state protection checks whether there is a connection with an attack on a planned refugee camp in the neighborhood of late August.</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>
