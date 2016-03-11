@@ -2,7 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/tmx_importer.svg)](https://badge.fury.io/rb/tmx_importer) [![Build Status](https://travis-ci.org/diasks2/tmx_importer.png)](https://travis-ci.org/diasks2/tmx_importer) [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/diasks2/tmx_importer/blob/master/LICENSE.txt)
 
-This gem handles the importing and parsing of [.tmx translation memory files](http://www.ttt.org/oscarstandards/tmx/tmx14-20020710.htm). TMX files are xml files.
+This gem handles the importing and parsing of [.tmx translation memory files](http://www.ttt.org/oscarstandards/tmx/tmx14-20020710.htm). [TMX files](https://en.wikipedia.org/wiki/Translation_Memory_eXchange) are xml files.
 
 ## Installation
 
