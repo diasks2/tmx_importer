@@ -21,4 +21,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.9"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_runtime_dependency "libxml-ruby"
+  spec.add_runtime_dependency "pretty_strings", "~> 0.5.0"
 end
