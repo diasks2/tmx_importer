@@ -1,26 +1,32 @@
 # TMX Importer
 
-# This gem handles the importing and parsing of [.tmx translation memory files](http://www.ttt.org/oscarstandards/tmx/tmx14-20020710.htm). TMX files are xml files.
+This gem handles the importing and parsing of [.tmx translation memory files](http://www.ttt.org/oscarstandards/tmx/tmx14-20020710.htm). TMX files are xml files.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-```ruby
+Add this line to your application's Gemfile:
+
+**Ruby**  
+```
+gem install tmx_importer
+```
+
+**Ruby on Rails**  
+Add this line to your application’s Gemfile:  
+```ruby 
 gem 'tmx_importer'
 ```
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install tmx_importer
-
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+# Get the high level stats of a TMX file
+file_path = File.expand_path('../tmx_importer/spec/test_sample_files/test_tm(utf-8).tmx')
+TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8').stats
+# => {:tu_count=>4, :seg_count=>8, :language_pairs=>[["de-DE", "en-US"]]}
+```
 
 ## Contributing
 
