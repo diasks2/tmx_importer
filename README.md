@@ -6,8 +6,6 @@ This gem handles the importing and parsing of [.tmx translation memory files](ht
 
 Add this line to your application's Gemfile:
 
-Add this line to your application's Gemfile:
-
 **Ruby**  
 ```
 gem install tmx_importer
