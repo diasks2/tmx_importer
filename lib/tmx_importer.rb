@@ -14,7 +14,7 @@ module TmxImporter
       @encoding = encoding.upcase
       @doc = {
         source_language: "",
-        tu: { id: "", counter: 0, vals: [], lang: "" },
+        tu: { id: "", counter: 0, vals: [], lang: "", creation_date: "" },
         seg: { lang: "", counter: 0, vals: [], role: "" },
         language_pairs: []
       }
@@ -117,15 +117,15 @@ module TmxImporter
 
     def write_tu(reader)
       @doc[:tu][:lang] = reader.get_attribute("srclang")
-      created_date = reader.get_attribute("creationdate").nil? ? DateTime.now.to_s : DateTime.parse(reader.get_attribute("creationdate")).to_s
-      @doc[:tu][:vals] << [@doc[:tu][:id], created_date]
+      @doc[:tu][:creation_date] = reader.get_attribute("creationdate").nil? ? DateTime.now.to_s : DateTime.parse(reader.get_attribute("creationdate")).to_s
+      @doc[:tu][:vals] << [@doc[:tu][:id], @doc[:tu][:creation_date]]
     end
 
     def write_seg(reader)
       return if reader.read_string.empty?
       text = PrettyStrings::Cleaner.new(reader.read_string.force_encoding('UTF-8')).pretty.gsub("\\","&#92;").gsub("'",%q(\\\'))
       word_count = text.gsub("\s+", ' ').split(' ').length
-      @doc[:seg][:vals] << [@doc[:tu][:id], @doc[:seg][:role], word_count, @doc[:seg][:lang], text]
+      @doc[:seg][:vals] << [@doc[:tu][:id], @doc[:seg][:role], word_count, @doc[:seg][:lang], text, @doc[:tu][:creation_date]]
     end
 
     def generate_unique_id

@@ -30,11 +30,11 @@ TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8').stats
 # Extract the segments of a TMX file
 # Result: [translation_units, segments]
 # translation_units = [tu_id, creation_date]
-# segments = [tu_id, segment_role, word_count, language, segment_text]
+# segments = [tu_id, segment_role, word_count, language, segment_text, creation_date]
 
 file_path = File.expand_path('../tmx_importer/spec/test_sample_files/test_tm(utf-8).tmx')
 TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8').import
-# => [[["5533-1457670156-1", "2016-03-11T13:22:36+09:00"], ["6836-1457670156-3", "2016-03-11T13:22:36+09:00"], ["3285-1457670156-5", "2016-03-11T13:22:36+09:00"], ["6706-1457670156-7", "2016-03-11T13:22:36+09:00"]], [["5533-1457670156-1", "", 1, "de-DE", "überprüfen"], ["5533-1457670156-1", "target", 1, "en-US", "check"], ["6836-1457670156-3", "source", 1, "de-DE", "Rückenlehneneinstellung"], ["6836-1457670156-3", "target", 2, "en-US", "Backrest adjustment"], ["3285-1457670156-5", "source", 1, "de-DE", "Bezüglich"], ["3285-1457670156-5", "target", 3, "en-US", "In terms of"], ["6706-1457670156-7", "source", 20, "de-DE", "Der Staatsschutz prüft, ob es einen Zusammenhang mit einem Anschlag auf eine geplante Flüchtlingsunterkunft in der Nachbarschaft Ende August gibt."], ["6706-1457670156-7", "target", 23, "en-US", "The state protection checks whether there is a connection with an attack on a planned refugee camp in the neighborhood of late August."]]]
+# => [[["3638-1457683912-1", "2016-03-11T17:11:52+09:00"], ["7214-1457683912-3", "2016-03-11T17:11:52+09:00"], ["1539-1457683912-5", "2016-03-11T17:11:52+09:00"], ["6894-1457683912-7", "2016-03-11T17:11:52+09:00"]], [["3638-1457683912-1", "", 1, "de-DE", "überprüfen", "2016-03-11T17:11:52+09:00"], ["3638-1457683912-1", "target", 1, "en-US", "check", "2016-03-11T17:11:52+09:00"], ["7214-1457683912-3", "source", 1, "de-DE", "Rückenlehneneinstellung", "2016-03-11T17:11:52+09:00"], ["7214-1457683912-3", "target", 2, "en-US", "Backrest adjustment", "2016-03-11T17:11:52+09:00"], ["1539-1457683912-5", "source", 1, "de-DE", "Bezüglich", "2016-03-11T17:11:52+09:00"], ["1539-1457683912-5", "target", 3, "en-US", "In terms of", "2016-03-11T17:11:52+09:00"], ["6894-1457683912-7", "source", 20, "de-DE", "Der Staatsschutz prüft, ob es einen Zusammenhang mit einem Anschlag auf eine geplante Flüchtlingsunterkunft in der Nachbarschaft Ende August gibt.", "2016-03-11T17:11:52+09:00"], ["6894-1457683912-7", "target", 23, "en-US", "The state protection checks whether there is a connection with an attack on a planned refugee camp in the neighborhood of late August.", "2016-03-11T17:11:52+09:00"]]]
 ```
 
 ## Contributing
