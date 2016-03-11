@@ -10,8 +10,8 @@ module TmxImporter
       @encoding = encoding.upcase
       @doc = {
         source_language: "",
-        tu: { id: "", counter: 0, vals: "", lang: ""},
-        seg: { lang: "", counter: 0, vals: "", role_counter: 0},
+        tu: { id: "", counter: 0, vals: "", lang: "" },
+        seg: { lang: "", counter: 0, vals: "" },
         language_pairs: []
       }
       raise "Encoding type not supported. Please choose an encoding of UTF-8, UTF-16LE, or UTF-16BE" unless @encoding.eql?('UTF-8') || @encoding.eql?('UTF-16LE') || @encoding.eql?('UTF-16BE')
@@ -68,23 +68,18 @@ module TmxImporter
         @doc[:source_language] = reader.get_attribute("srclang").force_encoding("UTF-8") if @doc[:source_language].empty? && reader.has_attributes? && reader.get_attribute("srclang")
       when [116, 117]
         @doc[:tu][:counter] += 1
-        @doc[:seg][:role_counter] == 0
       when [116, 117, 118]
         seg_lang = reader.get_attribute("lang") || reader.get_attribute("xml:lang")
         @doc[:seg][:lang] = seg_lang.force_encoding("UTF-8") unless seg_lang.empty?
       when [115, 101, 103]
         @doc[:seg][:counter] += 1
-        case
-        when !@doc[:seg][:lang].empty? &&
+        if !@doc[:seg][:lang].empty? &&
            @doc[:seg][:lang] != @doc[:source_language] &&
            @doc[:seg][:lang].split('-')[0].downcase != @doc[:source_language].split('-')[0].downcase &&
            @doc[:source_language] != '*all*'
           @doc[:language_pairs] << [@doc[:source_language], @doc[:seg][:lang]]
-        when @doc[:source_language] == '*all*' && @doc[:seg][:role_counter] == 0
+        elsif @doc[:source_language] == '*all*'
           @doc[:source_language] = @doc[:seg][:lang]
-          @doc[:seg][:role_counter] += 1
-        when @doc[:source_language] == '*all*' && @doc[:seg][:role_counter] > 0
-          @doc[:language_pairs] << [@doc[:source_language], @doc[:seg][:lang]]
         end
       end
     end

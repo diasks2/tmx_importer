@@ -51,5 +51,11 @@ describe TmxImporter do
       tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8')
       expect(tmx.stats).to eq({:tu_count=>4, :seg_count=>10, :language_pairs=>[["de-DE", "en-US"], ["de-DE", "it"], ["de-DE", "fr"]]})
     end
+
+    it 'reports the stats of a TMX file with out of order segments' do
+      file_path = File.expand_path('../tmx_importer/spec/test_sample_files/out_of_order_segments.tmx')
+      tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8')
+      expect(tmx.stats).to eq({:tu_count=>4, :seg_count=>8, :language_pairs=>[["de-DE", "en-US"]]})
+    end
   end
 end
