@@ -122,7 +122,7 @@ module TmxImporter
     end
 
     def write_seg(reader)
-      return if reader.read_string.empty?
+      return if reader.read_string.nil?
       text = PrettyStrings::Cleaner.new(reader.read_string.force_encoding('UTF-8')).pretty.gsub("\\","&#92;").gsub("'",%q(\\\'))
       word_count = text.gsub("\s+", ' ').split(' ').length
       @doc[:seg][:vals] << [@doc[:tu][:id], @doc[:seg][:role], word_count, @doc[:seg][:lang], text, @doc[:tu][:creation_date]]
