@@ -53,7 +53,7 @@ module TmxImporter
                                   d.bytes.to_a == [112, 104] }
         if !tag_stack.include?(reader.name)
           tag_stack.push(reader.name)
-          eval_state_initial(tag_stack,reader)
+          eval_state_initial(tag_stack, reader)
         elsif tag_stack.last == reader.name
           d = tag_stack.dup.pop
           tag_stack.pop if d.bytes.to_a == [35, 116, 101, 120, 116] || tag_stack.length > 3
@@ -62,7 +62,7 @@ module TmxImporter
       reader.close
     end
 
-    def eval_state_initial(tag_stack,reader)
+    def eval_state_initial(tag_stack, reader)
       case tag_stack.last.bytes.to_a
       when [104, 101, 97, 100, 101, 114]
         @doc[:source_language] = reader.get_attribute("srclang").force_encoding("UTF-8") if @doc[:source_language].empty? && reader.has_attributes? && reader.get_attribute("srclang")
