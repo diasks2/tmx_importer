@@ -3,6 +3,8 @@ require 'xml'
 require 'open-uri'
 require 'pretty_strings'
 
+Encoding.default_external = Encoding::UTF_8
+
 module TmxImporter
   class Tmx
     attr_reader :file_path, :encoding
@@ -112,7 +114,7 @@ module TmxImporter
         @doc[:language_pairs] << [@doc[:source_language].force_encoding("UTF-8"), @doc[:seg][:lang].force_encoding("UTF-8")]
         @doc[:seg][:role] = 'source'
       elsif @doc[:source_language] == '*all*'
-        @doc[:source_language] = @doc[:seg][:lang]
+        @doc[:source_language] = @doc[:seg][:lang].force_encoding("UTF-8")
         @doc[:seg][:role] = 'source'
       else
         @doc[:seg][:role] = 'target'
