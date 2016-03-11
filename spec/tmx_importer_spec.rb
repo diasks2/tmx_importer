@@ -10,6 +10,11 @@ describe TmxImporter do
     -> { expect(TmxImporter::Tmx.new(file_path: file_path, encoding: 'ISO-8859-9').stats).to raise_error }
   end
 
+  it 'raises an error if the wrong encoding is specified in the file' do
+    file_path = File.expand_path('../tmx_importer/spec/test_sample_files/bad_encoding.tmx')
+    -> { expect(TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8').stats).to raise_error }
+  end
+
   it 'raises an error if the file contains bad markup' do
     file_path = File.expand_path('../tmx_importer/spec/test_sample_files/bad_markup(utf-8).tmx')
     -> { expect(TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8').stats).to raise_error }
@@ -36,6 +41,12 @@ describe TmxImporter do
 
     it 'reports the stats of a UTF-16LE TMX file' do
       file_path = File.expand_path('../tmx_importer/spec/test_sample_files/test_tm(utf-16LE).tmx')
+      tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-16le')
+      expect(tmx.stats).to eq({:tu_count=>4, :seg_count=>8, :language_pairs=>[["de-DE", "en-US"]]})
+    end
+
+    it 'reports the stats of a UTF-16LE BOM TMX file' do
+      file_path = File.expand_path('../tmx_importer/spec/test_sample_files/test_tm(utf-16LE BOM).tmx')
       tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-16le')
       expect(tmx.stats).to eq({:tu_count=>4, :seg_count=>8, :language_pairs=>[["de-DE", "en-US"]]})
     end
