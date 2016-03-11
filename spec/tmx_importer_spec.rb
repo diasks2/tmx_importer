@@ -67,6 +67,12 @@ describe TmxImporter do
       tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8')
       expect(tmx.stats).to eq({:tu_count=>4, :seg_count=>8, :language_pairs=>[["de-DE", "en-US"]]})
     end
+
+    it 'imports a TMX file with UTF-16 LE BOM encoding' do
+      file_path = File.expand_path('../tmx_importer/spec/test_sample_files/strange_encoding.tmx')
+      tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-16LE')
+      expect(tmx.stats).to eq({:tu_count=>1, :seg_count=>2, :language_pairs=>[["tr", "en"]]})
+    end
   end
 
   describe '#import' do
@@ -116,6 +122,12 @@ describe TmxImporter do
       file_path = File.expand_path('../tmx_importer/spec/test_sample_files/out_of_order_segments.tmx')
       tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8')
       expect(tmx.import[1][2][1]).to eq("target")
+    end
+
+    it 'imports a TMX file with UTF-16 LE BOM encoding' do
+      file_path = File.expand_path('../tmx_importer/spec/test_sample_files/strange_encoding.tmx')
+      tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-16LE')
+      expect(tmx.import[1][1][3]).to eq("en")
     end
   end
 end

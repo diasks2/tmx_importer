@@ -3,9 +3,6 @@ require 'xml'
 require 'open-uri'
 require 'pretty_strings'
 
-Encoding.default_internal = Encoding::UTF_8
-Encoding.default_external = Encoding::UTF_8
-
 module TmxImporter
   class Tmx
     attr_reader :file_path, :encoding
@@ -18,6 +15,12 @@ module TmxImporter
         seg: { lang: "", counter: 0, vals: [], role: "" },
         language_pairs: []
       }
+      @src_regex = Regexp.new('(?<=srclang=\S)\S+(?=")|(?=\')'.encode(@encoding))
+      @src_string = 'srclang='.encode(@encoding).freeze
+      @tu_regex = Regexp.new('<\/tu>'.encode(@encoding))
+      @seg_regex = Regexp.new('<\/seg>'.encode(@encoding))
+      @lang_regex = Regexp.new('(?<=[^cn]lang=\S)\S+(?=")|(?=\')'.encode(@encoding))
+      @lang_string = 'lang'.encode(@encoding).freeze
       raise "Encoding type not supported. Please choose an encoding of UTF-8, UTF-16LE, or UTF-16BE" unless @encoding.eql?('UTF-8') || @encoding.eql?('UTF-16LE') || @encoding.eql?('UTF-16BE')
     end
 
@@ -43,11 +46,12 @@ module TmxImporter
     end
 
     def analyze_line(line)
-      @doc[:source_language] = line.scan(/(?<=srclang=\S)\S+(?=")|(?=')/)[0] if line.include?('srclang=')
-      @doc[:tu][:counter] += line.scan(/<\/tu>/).count
-      @doc[:seg][:counter] += line.scan(/<\/seg>/).count
-      if line.include?('lang')
-        @doc[:seg][:lang] = line.scan(/(?<=[^cn]lang=\S)\S+(?=")|(?=')/)[0]
+      @doc[:source_language] = line.scan(@src_regex)[0].encode('UTF-8') if line.include?(@src_string)
+      @doc[:tu][:counter] += line.scan(@tu_regex).count
+      @doc[:seg][:counter] += line.scan(@seg_regex).count
+      if line.include?(@lang_string)
+        @doc[:seg][:lang] = line.scan(@lang_regex)[0]
+        @doc[:seg][:lang] = @doc[:seg][:lang].encode('UTF-8') unless @doc[:seg][:lang].nil?
         write_language_pair
       end
     end
@@ -105,7 +109,7 @@ module TmxImporter
       if @doc[:seg][:lang] != @doc[:source_language] &&
          @doc[:seg][:lang].split('-')[0].downcase != @doc[:source_language].split('-')[0].downcase &&
          @doc[:source_language] != '*all*'
-        @doc[:language_pairs] << [@doc[:source_language], @doc[:seg][:lang]]
+        @doc[:language_pairs] << [@doc[:source_language].force_encoding("UTF-8"), @doc[:seg][:lang].force_encoding("UTF-8")]
         @doc[:seg][:role] = 'source'
       elsif @doc[:source_language] == '*all*'
         @doc[:source_language] = @doc[:seg][:lang]
@@ -117,7 +121,7 @@ module TmxImporter
 
     def write_tu(reader)
       @doc[:tu][:lang] = reader.get_attribute("srclang")
-      @doc[:tu][:creation_date] = reader.get_attribute("creationdate").nil? ? DateTime.now.to_s : DateTime.parse(reader.get_attribute("creationdate")).to_s
+      @doc[:tu][:creation_date] = reader.get_attribute("creationdate").nil? ? DateTime.now.to_s : DateTime.parse(reader.get_attribute("creationdate").force_encoding('UTF-8')).to_s
       @doc[:tu][:vals] << [@doc[:tu][:id], @doc[:tu][:creation_date]]
     end
 
