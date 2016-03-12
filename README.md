@@ -23,8 +23,9 @@ gem 'tmx_importer'
 
 ```ruby
 # Get the high level stats of a TMX file
+# Including the encoding is optional. If not included the gem will attempt to detect the encoding.
 file_path = File.expand_path('../tmx_importer/spec/test_sample_files/test_tm(utf-8).tmx')
-TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-8').stats
+TmxImporter::Tmx.new(file_path: file_path).stats
 # => {:tu_count=>4, :seg_count=>8, :language_pairs=>[["de-DE", "en-US"]]}
 
 # Extract the segments of a TMX file

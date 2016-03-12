@@ -7,17 +7,22 @@ require 'charlock_holmes'
 module TmxImporter
   class Tmx
     attr_reader :file_path, :encoding
-    def initialize(file_path:, encoding:)
+    def initialize(file_path:, **args)
       @file_path = file_path
-      @encoding = encoding.upcase
+      if args[:encoding].nil?
+        @encoding = CharlockHolmes::EncodingDetector.detect(File.read(@file_path)[0..100_000])[:encoding]
+      else
+        @encoding = args[:encoding].upcase
+      end
       @doc = {
         source_language: "",
         tu: { id: "", counter: 0, vals: [], lang: "", creation_date: "" },
         seg: { lang: "", counter: 0, vals: [], role: "" },
         language_pairs: []
       }
-      @text = CharlockHolmes::Converter.convert(File.read(open(@file_path)), encoding, 'UTF-8') if !@encoding.eql?('UTF-8')
+      raise "Encoding type could not be determined. Please set an encoding of UTF-8, UTF-16LE, or UTF-16BE" if @encoding.nil?
       raise "Encoding type not supported. Please choose an encoding of UTF-8, UTF-16LE, or UTF-16BE" unless @encoding.eql?('UTF-8') || @encoding.eql?('UTF-16LE') || @encoding.eql?('UTF-16BE')
+      @text = CharlockHolmes::Converter.convert(File.read(open(@file_path)), @encoding, 'UTF-8') if !@encoding.eql?('UTF-8')
     end
 
     def stats
