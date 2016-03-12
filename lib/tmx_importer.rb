@@ -12,6 +12,14 @@ module TmxImporter
       @content = File.read(open(@file_path)) if !args[:encoding].eql?('UTF-8')
       if args[:encoding].nil?
         @encoding = CharlockHolmes::EncodingDetector.detect(@content[0..100_000])[:encoding]
+        if @encoding.nil?
+          encoding_in_file = @content.dup.force_encoding('utf-8').scrub!("*").gsub!(/\0/, '').scan(/(?<=encoding=").*(?=")/)[0].upcase
+          if encoding_in_file.eql?('UTF-8')
+            @encoding = ('UTF-8')
+          elsif encoding_in_file.eql?('UTF-16')
+            @encoding = ('UTF-16LE')
+          end
+        end
       else
         @encoding = args[:encoding].upcase
       end

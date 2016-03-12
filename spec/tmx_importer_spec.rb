@@ -85,8 +85,8 @@ describe TmxImporter do
   describe '#import' do
     it 'imports a UTF-8 TMX file' do
       file_path = File.expand_path('../tmx_importer/spec/test_sample_files/test_tm(utf-8).tmx')
-      tmx = TmxImporter::Tmx.new(file_path: file_path).import
-      expect(tmx[1][2][3]).to eq("de-DE")
+      tmx = TmxImporter::Tmx.new(file_path: file_path)
+      expect(tmx.import[1][2][3]).to eq("de-DE")
     end
 
     it 'imports a UTF-8 TMX file 2' do
@@ -97,7 +97,7 @@ describe TmxImporter do
 
     it 'imports a UTF-16LE TMX file' do
       file_path = File.expand_path('../tmx_importer/spec/test_sample_files/test_tm(utf-16LE).tmx')
-      tmx = TmxImporter::Tmx.new(file_path: file_path, encoding: 'utf-16le')
+      tmx = TmxImporter::Tmx.new(file_path: file_path)
       expect(tmx.import[1][3][4]).to eq("Backrest adjustment")
     end
 
