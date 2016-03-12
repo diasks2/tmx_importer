@@ -2,8 +2,7 @@ require 'tmx_importer/version'
 require 'xml'
 require 'open-uri'
 require 'pretty_strings'
-
-Encoding.default_external = Encoding::UTF_8
+require 'charlock_holmes'
 
 module TmxImporter
   class Tmx
@@ -17,20 +16,15 @@ module TmxImporter
         seg: { lang: "", counter: 0, vals: [], role: "" },
         language_pairs: []
       }
-      @src_regex = Regexp.new('(?<=srclang=\S)\S+(?=")|(?=\')'.encode(@encoding))
-      @src_string = 'srclang='.encode(@encoding).freeze
-      @tu_regex = Regexp.new('<\/tu>'.encode(@encoding))
-      @seg_regex = Regexp.new('<\/seg>'.encode(@encoding))
-      @lang_regex = Regexp.new('(?<=[^cn]lang=\S)\S+(?=")|(?=\')'.encode(@encoding))
-      @lang_string = 'lang'.encode(@encoding).freeze
+      @text = CharlockHolmes::Converter.convert(File.read(open(@file_path)), encoding, 'UTF-8') if !@encoding.eql?('UTF-8')
       raise "Encoding type not supported. Please choose an encoding of UTF-8, UTF-16LE, or UTF-16BE" unless @encoding.eql?('UTF-8') || @encoding.eql?('UTF-16LE') || @encoding.eql?('UTF-16BE')
     end
 
     def stats
-      File.open(@file_path, "rb:#{encoding}") do |file|
-        file.each do |line|
-          analyze_line(line)
-        end
+      if encoding.eql?('UTF-8')
+        analyze_stats_utf_8
+      else
+        analyze_stats_utf_16
       end
       {tu_count: @doc[:tu][:counter], seg_count: @doc[:seg][:counter], language_pairs: @doc[:language_pairs].uniq}
     end
@@ -43,29 +37,35 @@ module TmxImporter
 
     private
 
-    def read_file
-      XML::Reader.io(open(file_path), options: XML::Parser::Options::NOERROR, encoding: set_encoding)
-    end
-
-    def analyze_line(line)
-      @doc[:source_language] = line.scan(@src_regex)[0].encode('UTF-8') if line.include?(@src_string)
-      @doc[:tu][:counter] += line.scan(@tu_regex).count
-      @doc[:seg][:counter] += line.scan(@seg_regex).count
-      if line.include?(@lang_string)
-        @doc[:seg][:lang] = line.scan(@lang_regex)[0]
-        @doc[:seg][:lang] = @doc[:seg][:lang].encode('UTF-8') unless @doc[:seg][:lang].nil?
-        write_language_pair
+    def analyze_stats_utf_8
+      File.readlines(@file_path).each do |line|
+        analyze_line(line)
       end
     end
 
-    def set_encoding
-      case encoding
-      when 'UTF-8'
-        xml_encoding = XML::Encoding::UTF_8
-      when 'UTF-16LE'
-        xml_encoding = XML::Encoding::UTF_16LE
-      when 'UTF-16BE'
-        xml_encoding = XML::Encoding::UTF_16BE
+    def analyze_stats_utf_16
+      @text.each_line do |line|
+        analyze_line(line)
+      end
+    end
+
+    def read_file
+      if encoding.eql?('UTF-8')
+        XML::Reader.io(open(file_path), options: XML::Parser::Options::NOERROR, encoding: XML::Encoding::UTF_8)
+      else
+        reader = @text.gsub!(/(?<=encoding=").*(?=")/, 'utf-8').gsub(/&#x[0-1]?[0-9a-fA-F];/, ' ').gsub(/[\0-\x1f\x7f\u2028]/, ' ')
+        XML::Reader.string(reader, options: XML::Parser::Options::NOERROR, encoding: XML::Encoding::UTF_8)
+      end
+    end
+
+    def analyze_line(line)
+      @doc[:source_language] = line.scan(/(?<=srclang=\S)\S+(?=")|(?=')/)[0] if line.include?('srclang=')
+      @doc[:tu][:counter] += line.scan(/<\/tu>/).count
+      @doc[:seg][:counter] += line.scan(/<\/seg>/).count
+      if line.include?('lang')
+        @doc[:seg][:lang] = line.scan(/(?<=[^cn]lang=\S)\S+(?=")|(?=')/)[0]
+        @doc[:seg][:lang] = @doc[:seg][:lang] unless @doc[:seg][:lang].nil?
+        write_language_pair
       end
     end
 
@@ -92,13 +92,13 @@ module TmxImporter
     def eval_state_initial(tag_stack, reader)
       case tag_stack.last.bytes.to_a
       when [104, 101, 97, 100, 101, 114]
-        @doc[:source_language] = reader.get_attribute("srclang").force_encoding("UTF-8") if @doc[:source_language].empty? && reader.has_attributes? && reader.get_attribute("srclang")
+        @doc[:source_language] = reader.get_attribute("srclang") if @doc[:source_language].empty? && reader.has_attributes? && reader.get_attribute("srclang")
       when [116, 117]
         write_tu(reader)
         @doc[:tu][:counter] += 1
       when [116, 117, 118]
         seg_lang = reader.get_attribute("lang") || reader.get_attribute("xml:lang")
-        @doc[:seg][:lang] = seg_lang.force_encoding("UTF-8") unless seg_lang.empty?
+        @doc[:seg][:lang] = seg_lang unless seg_lang.empty?
       when [115, 101, 103]
         write_seg(reader)
         write_language_pair
@@ -111,10 +111,10 @@ module TmxImporter
       if @doc[:seg][:lang] != @doc[:source_language] &&
          @doc[:seg][:lang].split('-')[0].downcase != @doc[:source_language].split('-')[0].downcase &&
          @doc[:source_language] != '*all*'
-        @doc[:language_pairs] << [@doc[:source_language].force_encoding("UTF-8"), @doc[:seg][:lang].force_encoding("UTF-8")]
+        @doc[:language_pairs] << [@doc[:source_language], @doc[:seg][:lang]]
         @doc[:seg][:role] = 'source'
       elsif @doc[:source_language] == '*all*'
-        @doc[:source_language] = @doc[:seg][:lang].force_encoding("UTF-8")
+        @doc[:source_language] = @doc[:seg][:lang]
         @doc[:seg][:role] = 'source'
       else
         @doc[:seg][:role] = 'target'
@@ -123,13 +123,13 @@ module TmxImporter
 
     def write_tu(reader)
       @doc[:tu][:lang] = reader.get_attribute("srclang")
-      @doc[:tu][:creation_date] = reader.get_attribute("creationdate").nil? ? DateTime.now.to_s : DateTime.parse(reader.get_attribute("creationdate").force_encoding('UTF-8')).to_s
+      @doc[:tu][:creation_date] = reader.get_attribute("creationdate").nil? ? DateTime.now.to_s : DateTime.parse(reader.get_attribute("creationdate")).to_s
       @doc[:tu][:vals] << [@doc[:tu][:id], @doc[:tu][:creation_date]]
     end
 
     def write_seg(reader)
       return if reader.read_string.nil?
-      text = PrettyStrings::Cleaner.new(reader.read_string.force_encoding('UTF-8')).pretty.gsub("\\","&#92;").gsub("'",%q(\\\'))
+      text = PrettyStrings::Cleaner.new(reader.read_string).pretty.gsub("\\","&#92;").gsub("'",%q(\\\'))
       word_count = text.gsub("\s+", ' ').split(' ').length
       @doc[:seg][:vals] << [@doc[:tu][:id], @doc[:seg][:role], word_count, @doc[:seg][:lang], text, @doc[:tu][:creation_date]]
     end
