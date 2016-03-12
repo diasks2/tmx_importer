@@ -9,8 +9,9 @@ module TmxImporter
     attr_reader :file_path, :encoding
     def initialize(file_path:, **args)
       @file_path = file_path
+      @content = File.read(open(@file_path)) if !args[:encoding].eql?('UTF-8')
       if args[:encoding].nil?
-        @encoding = CharlockHolmes::EncodingDetector.detect(File.read(@file_path)[0..100_000])[:encoding]
+        @encoding = CharlockHolmes::EncodingDetector.detect(@content[0..100_000])[:encoding]
       else
         @encoding = args[:encoding].upcase
       end
@@ -22,7 +23,7 @@ module TmxImporter
       }
       raise "Encoding type could not be determined. Please set an encoding of UTF-8, UTF-16LE, or UTF-16BE" if @encoding.nil?
       raise "Encoding type not supported. Please choose an encoding of UTF-8, UTF-16LE, or UTF-16BE" unless @encoding.eql?('UTF-8') || @encoding.eql?('UTF-16LE') || @encoding.eql?('UTF-16BE')
-      @text = CharlockHolmes::Converter.convert(File.read(open(@file_path)), @encoding, 'UTF-8') if !@encoding.eql?('UTF-8')
+      @text = CharlockHolmes::Converter.convert(@content, @encoding, 'UTF-8') if !@encoding.eql?('UTF-8')
     end
 
     def stats
@@ -58,7 +59,7 @@ module TmxImporter
       if encoding.eql?('UTF-8')
         XML::Reader.io(open(file_path), options: XML::Parser::Options::NOERROR, encoding: XML::Encoding::UTF_8)
       else
-        reader = @text.gsub!(/(?<=encoding=").*(?=")/, 'utf-8').gsub(/&#x[0-1]?[0-9a-fA-F];/, ' ').gsub(/[\0-\x1f\x7f\u2028]/, ' ')
+        reader = @text.gsub(/(?<=encoding=").*(?=")/, 'utf-8').gsub(/&#x[0-1]?[0-9a-fA-F];/, ' ').gsub(/[\0-\x1f\x7f\u2028]/, ' ')
         XML::Reader.string(reader, options: XML::Parser::Options::NOERROR, encoding: XML::Encoding::UTF_8)
       end
     end

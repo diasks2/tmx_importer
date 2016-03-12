@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'open-uri'
 
 describe TmxImporter do
   it 'has a version number' do
