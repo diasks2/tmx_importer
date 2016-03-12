@@ -74,6 +74,12 @@ describe TmxImporter do
       tmx = TmxImporter::Tmx.new(file_path: file_path)
       expect(tmx.stats).to eq({:tu_count=>1, :seg_count=>2, :language_pairs=>[["tr", "en"]]})
     end
+
+    it 'imports a TMX file with single quotes' do
+      file_path = File.expand_path('../tmx_importer/spec/test_sample_files/single_quotes.tmx')
+      tmx = TmxImporter::Tmx.new(file_path: file_path)
+      expect(tmx.stats).to eq({:tu_count=>4, :seg_count=>8, :language_pairs=>[["de-DE", "en-US"]]})
+    end
   end
 
   describe '#import' do
@@ -129,6 +135,12 @@ describe TmxImporter do
       file_path = File.expand_path('../tmx_importer/spec/test_sample_files/strange_encoding.tmx')
       tmx = TmxImporter::Tmx.new(file_path: file_path)
       expect(tmx.import[1][1][3]).to eq("en")
+    end
+
+    it 'imports a TMX file with single_quotes' do
+      file_path = File.expand_path('../tmx_importer/spec/test_sample_files/single_quotes.tmx')
+      tmx = TmxImporter::Tmx.new(file_path: file_path)
+      expect(tmx.import[1][2][3]).to eq("de-DE")
     end
   end
 end

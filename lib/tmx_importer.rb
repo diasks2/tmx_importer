@@ -65,11 +65,13 @@ module TmxImporter
     end
 
     def analyze_line(line)
-      @doc[:source_language] = line.scan(/(?<=srclang=\S)\S+(?=")|(?=')/)[0] if line.include?('srclang=')
+      @doc[:source_language] = line.scan(/(?<=srclang=\S)\S+(?=")/)[0] if line.include?('srclang=') && !line.scan(/(?<=srclang=\S)\S+(?=")/).empty?
+      @doc[:source_language] = line.scan(/(?<=srclang=\S)\S+(?=')/)[0] if line.include?('srclang=') && !line.scan(/(?<=srclang=\S)\S+(?=')/).empty?
       @doc[:tu][:counter] += line.scan(/<\/tu>/).count
       @doc[:seg][:counter] += line.scan(/<\/seg>/).count
       if line.include?('lang')
-        @doc[:seg][:lang] = line.scan(/(?<=[^cn]lang=\S)\S+(?=")|(?=')/)[0]
+        @doc[:seg][:lang] = line.scan(/(?<=[^cn]lang=\S)\S+(?=")/)[0] if !line.scan(/(?<=[^cn]lang=\S)\S+(?=")/).empty?
+        @doc[:seg][:lang] = line.scan(/(?<=[^cn]lang=\S)\S+(?=')/)[0] if !line.scan(/(?<=[^cn]lang=\S)\S+(?=')/).empty?
         @doc[:seg][:lang] = @doc[:seg][:lang] unless @doc[:seg][:lang].nil?
         write_language_pair
       end
