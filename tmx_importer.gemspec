@@ -22,6 +22,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec"
   spec.add_runtime_dependency "libxml-ruby"
-  spec.add_runtime_dependency "pretty_strings", "~> 0.5.0"
+  spec.add_runtime_dependency "pretty_strings", "~> 0.6.0"
   spec.add_runtime_dependency "charlock_holmes_bundle_icu", '~> 0.6.9.2'
 end

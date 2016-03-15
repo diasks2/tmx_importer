@@ -138,7 +138,6 @@ module TmxImporter
     end
 
     def write_tu(reader)
-      @doc[:tu][:lang] = reader.get_attribute("srclang")
       @doc[:tu][:creation_date] = reader.get_attribute("creationdate").nil? ? DateTime.now.to_s : DateTime.parse(reader.get_attribute("creationdate")).to_s
       @doc[:tu][:vals] << [@doc[:tu][:id], @doc[:tu][:creation_date]]
     end
