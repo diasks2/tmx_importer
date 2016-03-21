@@ -3,6 +3,7 @@ require 'xml'
 require 'open-uri'
 require 'pretty_strings'
 require 'charlock_holmes'
+require 'nokogiri'
 
 module TmxImporter
   class Tmx
@@ -44,12 +45,30 @@ module TmxImporter
     end
 
     def import
-      reader = read_file
-      parse_file(reader)
+      if encoding.eql?('UTF-8')
+        reader = read_file
+        parse_file(reader)
+      else
+        import_utf_16
+      end
       [@doc[:tu][:vals], @doc[:seg][:vals]]
     end
 
     private
+
+    def import_utf_16
+      doc = Nokogiri::XML(@text.gsub(/(?<=encoding=").*(?=")/, 'utf-8')) do |config|
+        config.options = Nokogiri::XML::ParseOptions::NOERROR
+      end
+      @doc[:source_language] = doc.css("header").attr("srclang").to_s
+      doc.css("tu").each_with_index do |tu, index|
+        create_nokogiri_tu(tu)
+        tu.css("tuv").each_with_index do |tuv, i|
+          determine_segment_role(tuv, i)
+          write_seg_nokogiri(tuv.css("seg").text)
+        end
+      end
+    end
 
     def analyze_stats_utf_8
       File.readlines(@file_path).each do |line|
@@ -60,6 +79,41 @@ module TmxImporter
     def analyze_stats_utf_16
       @text.each_line do |line|
         analyze_line(line)
+      end
+    end
+
+    def create_nokogiri_tu(tu)
+      generate_unique_id
+      @doc[:tu][:creation_date] = tu.attr("creationdate").nil? ? DateTime.now.to_s : DateTime.parse(tu.attr("creationdate").to_s).to_s
+      @doc[:tu][:vals] << [@doc[:tu][:id], @doc[:tu][:creation_date]]
+    end
+
+    def determine_segment_role(tuv, i)
+      if tuv.attr("xml:lang").to_s.nil? || tuv.attr("xml:lang").to_s.empty?
+        @doc[:seg][:lang] = tuv.attr("lang").to_s
+      else
+        @doc[:seg][:lang] = tuv.attr("xml:lang").to_s
+      end
+      if @doc[:seg][:lang].nil? || @doc[:seg][:lang].empty?
+        if i.eql?(0)
+          @doc[:seg][:role] = 'source'
+        else
+          @doc[:seg][:role] = 'target'
+        end
+      else
+        if @doc[:seg][:lang] != @doc[:source_language] &&
+           @doc[:seg][:lang].split('-')[0].downcase != @doc[:source_language].split('-')[0].downcase &&
+           @doc[:source_language] != '*all*'
+          @doc[:seg][:role] = 'source'
+        elsif @doc[:source_language] == '*all*'
+          if i.eql?(0)
+            @doc[:seg][:role] = 'source'
+          else
+            @doc[:seg][:role] = 'target'
+          end
+        else
+          @doc[:seg][:role] = 'target'
+        end
       end
     end
 
@@ -145,6 +199,13 @@ module TmxImporter
     def write_seg(reader)
       return if reader.read_string.nil?
       text = PrettyStrings::Cleaner.new(reader.read_string).pretty.gsub("\\","&#92;").gsub("'",%q(\\\'))
+      word_count = text.gsub("\s+", ' ').split(' ').length
+      @doc[:seg][:vals] << [@doc[:tu][:id], @doc[:seg][:role], word_count, @doc[:seg][:lang], text, @doc[:tu][:creation_date]]
+    end
+
+    def write_seg_nokogiri(segment_text)
+      return if segment_text.nil? || segment_text.empty?
+      text = PrettyStrings::Cleaner.new(segment_text).pretty.gsub("\\","&#92;").gsub("'",%q(\\\'))
       word_count = text.gsub("\s+", ' ').split(' ').length
       @doc[:seg][:vals] << [@doc[:tu][:id], @doc[:seg][:role], word_count, @doc[:seg][:lang], text, @doc[:tu][:creation_date]]
     end
